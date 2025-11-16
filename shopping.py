@@ -60,13 +60,64 @@ def load_data(filename):
     is 1 if Revenue is true, and 0 otherwise.
     """
     
-    with open(filename, 'r') as file:
+    # Dictionary to map month abbreviations to integers
+    months_to_int = {
+        "Jan": 0,
+        "Feb": 1,
+        "Mar": 2,
+        "Apr": 3,
+        "May": 4,
+        "June": 5,
+        "Jul": 6,
+        "Aug": 7,
+        "Sep": 8,
+        "Oct": 9,
+        "Nov": 10,
+        "Dec": 11
+    }
+
+    # Dictionary to map "TRUE" and "FALSE" strings to 1 and 0
+    boolean_to_int = {
+        "FALSE": 0,
+        "TRUE": 1
+    }
+
+    evidence = []
+    labels = []
+
+    # Open CSV file and read its content
+    with open("shopping.csv", 'r') as file:
         csv_reader = csv.reader(file)
-        next(csv_reader)
+        next(csv_reader) # skip header
+        for row in csv_reader:
+            evidence_row = []
+            # Convert each column to the correct data type
+            evidence_row.append(int(row[0]))  # Administrative
+            evidence_row.append(float(row[1]))  # Administrative_Duration 
+            evidence_row.append(int(row[2]))  # Informational 
+            evidence_row.append(float(row[3]))  # Informational_Duration 
+            evidence_row.append(int(row[4]))  # ProductRelated 
+            evidence_row.append(float(row[5]))  # ProductRelated_Duration 
+            evidence_row.append(float(row[6]))  # BounceRates
+            evidence_row.append(float(row[7]))  # ExitRates 
+            evidence_row.append(float(row[8]))  # PageValues 
+            evidence_row.append(float(row[9]))  # SpecialDay 
+            evidence_row.append(months_to_int[row[10]])  # Month 
+            evidence_row.append(int(row[11]))  # OperatingSystems 
+            evidence_row.append(int(row[12]))  # Browser
+            evidence_row.append(int(row[13]))  # Region 
+            evidence_row.append(int(row[14]))  # TrafficType 
+            
+            visitor_type = 1 if row[15] == "Returning_Visitor" else 0
+            evidence_row.append(visitor_type)  # VisitorType
+            
+            evidence_row.append(boolean_to_int[row[16]])  # Weekend
+            
+            evidence.append(evidence_row)
+            
+            labels.append(boolean_to_int[row[17]])
 
-    return evidence, labels
-
-
+    return (evidence, labels)
 
 
 def train_model(evidence, labels):
@@ -74,7 +125,9 @@ def train_model(evidence, labels):
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
-    raise NotImplementedError
+    model = KNeighborsClassifier(n_neighbors=1)
+    model.fit(evidence, labels)
+    return model
 
 
 def evaluate(labels, predictions):
@@ -92,7 +145,26 @@ def evaluate(labels, predictions):
     representing the "true negative rate": the proportion of
     actual negative labels that were accurately identified.
     """
-    raise NotImplementedError
+    true_positives = 0
+    true_negatives = 0
+    total_positives = 0
+    total_negatives = 0
+
+    # Iterate over all labels and predictions
+    for label, prediction in zip(labels, predictions):
+        if label == 1:
+            total_positives += 1
+            if prediction == 1:
+                true_positives += 1
+        elif label == 0:
+            total_negatives += 1
+            if prediction == 0:
+                true_negatives += 1
+
+    sensitivity = true_positives / total_positives
+    specificity = true_negatives / total_negatives
+
+    return (sensitivity, specificity)
 
 
 if __name__ == "__main__":
