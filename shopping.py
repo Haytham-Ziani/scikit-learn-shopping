@@ -86,7 +86,7 @@ def load_data(filename):
     labels = []
 
     # Open CSV file and read its content
-    with open("shopping.csv", 'r') as file:
+    with open(filename, 'r') as file:
         csv_reader = csv.reader(file)
         next(csv_reader) # skip header
         for row in csv_reader:
